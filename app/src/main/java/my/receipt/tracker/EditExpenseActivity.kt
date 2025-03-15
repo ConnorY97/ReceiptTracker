@@ -1,6 +1,7 @@
 package my.receipt.tracker
 
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
@@ -48,7 +49,7 @@ class EditExpenseActivity : AppCompatActivity() {
 
         expense?.let {
             etDescription.setText(it.description)
-            etAmount.setText(it.amount.toString())
+            etAmount.setText(String.format(it.amount.toString()))
             etDate.setText(it.date)
 
             Glide.with(this).load(it.receiptImagePath).into(ivReceipt)
@@ -70,8 +71,19 @@ class EditExpenseActivity : AppCompatActivity() {
         }
 
         btnDelete.setOnClickListener {
-            deleteExpense()
+            showDeleteConfirmationDialog()
         }
+    }
+
+    private fun showDeleteConfirmationDialog() {
+        AlertDialog.Builder(this)
+            .setTitle("Delete Expense")
+            .setMessage("Are you sure you want to delete this expense?")
+            .setPositiveButton("Yes") { _, _ ->
+                deleteExpense()
+            }
+            .setNegativeButton("No", null) // Dismisses the dialog
+            .show()
     }
 
     private fun deleteExpense() {

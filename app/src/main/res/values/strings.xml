@@ -18,4 +18,5 @@
     <string name="change_bank_screenshot">Change Bank Screenshot</string>
     <string name="fmod_expense_tracker">FMOD Expense Tracker</string>
     <string name="export_all">Export All</string>
+    <string name="create_expense">Create Expense</string>
 </resources>
