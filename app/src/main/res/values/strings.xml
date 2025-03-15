@@ -16,4 +16,5 @@
     <string name="delete">Delete</string>
     <string name="change_receipt_image">Change Receipt Image</string>
     <string name="change_bank_screenshot">Change Bank Screenshot</string>
+    <string name="fmod_expense_tracker">FMOD Expense Tracker</string>
 </resources>
