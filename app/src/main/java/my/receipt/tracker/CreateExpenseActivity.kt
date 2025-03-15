@@ -91,9 +91,18 @@ class CreateExpenseActivity : AppCompatActivity() {
                 REQUEST_IMAGE_PICK -> {
                     val selectedImageUri: Uri? = data?.data
                     selectedImageUri?.let {
-                        ivScreenshot.setImageURI(it)
-                        ivScreenshot.visibility = ImageView.VISIBLE
-                        screenshotImagePath = it.toString()
+                        try {
+                            // Create a bitmap from the URI
+                            val bitmap = MediaStore.Images.Media.getBitmap(contentResolver, it)
+                            // Save the bitmap to internal storage
+                            screenshotImagePath = saveImageToInternalStorage(bitmap, "screenshot_${System.currentTimeMillis()}.jpg")
+                            // Display the image
+                            ivScreenshot.setImageBitmap(bitmap)
+                            ivScreenshot.visibility = ImageView.VISIBLE
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                            Toast.makeText(this, "Failed to load image", Toast.LENGTH_SHORT).show()
+                        }
                     }
                 }
             }
@@ -102,7 +111,9 @@ class CreateExpenseActivity : AppCompatActivity() {
 
     private fun saveImageToInternalStorage(bitmap: Bitmap, fileName: String): String {
         val file = File(filesDir, fileName)
-        FileOutputStream(file).use { bitmap.compress(Bitmap.CompressFormat.JPEG, 100, it) }
+        FileOutputStream(file).use {
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 90, it)
+        }
         return file.absolutePath
     }
 
@@ -115,13 +126,18 @@ class CreateExpenseActivity : AppCompatActivity() {
             return
         }
 
+        if (receiptImagePath == null) {
+            Toast.makeText(this, "Please capture a receipt image", Toast.LENGTH_SHORT).show()
+            return
+        }
+
         val newExpense = Expense(
-            id = UUID.randomUUID().toString(), // Generate a unique ID
+            id = UUID.randomUUID().toString(),
             description = description,
             amount = amount,
             date = selectedDate,
             receiptImagePath = receiptImagePath,
-            screenshotImagePath = screenshotImagePath // Make sure this variable is set
+            screenshotImagePath = screenshotImagePath
         )
 
         val expenses = loadExpenses().toMutableList()
@@ -131,8 +147,6 @@ class CreateExpenseActivity : AppCompatActivity() {
         Toast.makeText(this, "Expense saved!", Toast.LENGTH_SHORT).show()
         finish()
     }
-
-
 
     private fun loadExpenses(): List<Expense> {
         val file = File(filesDir, EXPENSES_FILE)
