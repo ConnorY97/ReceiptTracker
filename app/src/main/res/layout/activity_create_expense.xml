@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <EditText
+            android:id="@+id/etDescription"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:autofillHints="Description"
+            android:hint="@string/description"
+            android:inputType="text"/>
+
+        <EditText
+            android:id="@+id/etAmount"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:autofillHints="Amount"
+            android:hint="@string/amount"
+            android:inputType="numberDecimal"
+            android:layout_marginTop="8dp"/>
+
+        <Button
+            android:id="@+id/btnSelectDate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/select_date"
+            android:layout_marginTop="8dp"/>
+
+        <Button
+            android:id="@+id/btnCaptureReceipt"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/capture_receipt"
+            android:layout_marginTop="8dp"/>
+
+        <ImageView
+            android:id="@+id/ivReceipt"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:contentDescription="@string/receipt"
+            android:scaleType="centerCrop"
+            android:visibility="gone"
+            android:layout_marginTop="8dp"/>
+
+        <Button
+            android:id="@+id/btnSelectScreenshot"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/select_bank_screenshot"
+            android:layout_marginTop="8dp"/>
+
+        <ImageView
+            android:id="@+id/ivScreenshot"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:contentDescription="@string/bank_screenshot"
+            android:scaleType="centerCrop"
+            android:visibility="gone"
+            android:layout_marginTop="8dp"/>
+
+        <Button
+            android:id="@+id/btnSaveExpense"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/save_expense"
+            android:layout_marginTop="16dp"/>
+    </LinearLayout>
+
+</ScrollView>

@@ -6,12 +6,12 @@ plugins {
 
 android {
     namespace = "my.receipt.tracker"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "my.receipt.tracker"
         minSdk = 24
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
@@ -49,6 +49,12 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.androidx.appcompat)
+    implementation(libs.compose.theme.adapter)
+    implementation(libs.gson)
+    implementation(libs.androidx.recyclerview)
+    implementation(libs.annotations)
+    implementation(libs.glide)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

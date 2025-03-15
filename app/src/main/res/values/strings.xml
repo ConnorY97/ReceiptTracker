@@ -1,3 +1,17 @@
 <resources>
     <string name="app_name">ReceiptTracker</string>
+    <string name="create_new_expense">Create New Expense</string>
+    <string name="view_expenses">View Expenses</string>
+    <string name="description">Description</string>
+    <string name="amount">Amount</string>
+    <string name="select_date">Select Date</string>
+    <string name="capture_receipt">Capture Receipt</string>
+    <string name="select_bank_screenshot">Select Bank Screenshot</string>
+    <string name="save_expense">Save Expense</string>
+    <string name="receipt">Receipt</string>
+    <string name="bank_screenshot">Bank Screenshot</string>
+    <string name="back">Back</string>
+    <string name="date">Date</string>
+    <string name="receipt_image">Receipt Image</string>
+    <string name="delete">Delete</string>
 </resources>

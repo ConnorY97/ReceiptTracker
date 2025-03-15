@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <EditText
+        android:id="@+id/etDescription"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:autofillHints="Description"
+        android:hint="@string/description" />
+
+    <EditText
+        android:id="@+id/etAmount"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:autofillHints="Amount"
+        android:inputType="numberDecimal"
+        android:hint="@string/amount" />
+
+    <EditText
+        android:id="@+id/etDate"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:autofillHints="Date"
+        android:inputType="date"
+        android:hint="@string/date" />
+
+    <ImageView
+        android:id="@+id/ivReceipt"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:scaleType="centerCrop"
+        android:contentDescription="Receipt Image" />
+
+    <Button
+        android:id="@+id/btnChangeReceipt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Change Receipt Image" />
+
+    <ImageView
+        android:id="@+id/ivScreenshot"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:scaleType="centerCrop"
+        android:contentDescription="Bank Screenshot" />
+
+    <Button
+        android:id="@+id/btnChangeScreenshot"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Change Bank Screenshot" />
+
+
+    <Button
+        android:id="@+id/btnSave"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/save_expense" />
+
+    <Button
+        android:id="@+id/btnDelete"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/delete"
+        android:backgroundTint="@android:color/holo_red_light" />
+
+</LinearLayout>
