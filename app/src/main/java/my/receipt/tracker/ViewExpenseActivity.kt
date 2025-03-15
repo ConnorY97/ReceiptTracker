@@ -44,9 +44,7 @@ class ViewExpensesActivity : AppCompatActivity() {
             emptyList()
         }
 
-        expensesAdapter = ExpenseAdapter(expenses.map { expense ->
-            Expense(expense.id, expense.description, expense.amount, expense.date, "", "")
-        }) { selectedExpense ->
+        expensesAdapter = ExpenseAdapter(expenses) { selectedExpense ->
             val intent = Intent(this, EditExpenseActivity::class.java)
             intent.putExtra("expense", Gson().toJson(selectedExpense))
             startActivityForResult(intent, REQUEST_EDIT_EXPENSE)
