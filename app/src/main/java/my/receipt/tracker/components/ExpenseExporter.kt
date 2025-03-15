@@ -72,7 +72,7 @@ class ExpenseExporter(private val context: Context) {
     private fun createCsvFile(csvFile: File, expenses: List<Expense>, imagesDir: File) {
         FileWriter(csvFile).use { writer ->
             // Write CSV header
-            writer.append("ID,Description,Amount,Date,Receipt Image,Screenshot Image\n")
+            writer.append("ID,Description,Location,US Amount, Aus Amount,Date,Receipt Image,Screenshot Image\n")
 
             // Write expense data
             expenses.forEach { expense ->
@@ -81,7 +81,9 @@ class ExpenseExporter(private val context: Context) {
 
                 writer.append("${expense.id},")
                 writer.append("\"${expense.description.replace("\"", "\"\"")}\",")
-                writer.append("${expense.amount},")
+                writer.append("\"${expense.location.replace("\"", "\"\"")}\",")
+                writer.append("${expense.usAmount},")
+                writer.append("${expense.ausAumount},")
                 writer.append("${expense.date},")
                 writer.append("${receiptFilename ?: ""},")
                 writer.append("${screenshotFilename ?: ""}\n")

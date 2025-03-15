@@ -17,7 +17,9 @@ import com.google.gson.reflect.TypeToken
 
 class EditExpenseActivity : AppCompatActivity() {
     private lateinit var etDescription: EditText
-    private lateinit var etAmount: EditText
+    private lateinit var etLocation: EditText
+    private lateinit var etUSAmount: EditText
+    private lateinit var etAUSAmount: EditText
     private lateinit var etDate: EditText
     private lateinit var ivReceipt: ImageView
     private lateinit var ivScreenshot: ImageView
@@ -54,7 +56,9 @@ class EditExpenseActivity : AppCompatActivity() {
         setContentView(R.layout.activity_edit_expense)
 
         etDescription = findViewById(R.id.etDescription)
-        etAmount = findViewById(R.id.etAmount)
+        etLocation = findViewById(R.id.etLocation)
+        etUSAmount = findViewById(R.id.etUSAmount)
+        etAUSAmount = findViewById(R.id.etAUSAmount)
         etDate = findViewById(R.id.etDate)
         ivReceipt = findViewById(R.id.ivReceipt)
         ivScreenshot = findViewById(R.id.ivScreenshot)
@@ -68,7 +72,9 @@ class EditExpenseActivity : AppCompatActivity() {
 
         expense?.let {
             etDescription.setText(it.description)
-            etAmount.setText(String.format(it.amount.toString()))
+            etLocation.setText(it.location)
+            etUSAmount.setText(String.format(it.usAmount.toString()))
+            etAUSAmount.setText(String.format(it.ausAumount.toString()))
             etDate.setText(it.date)
 
             Glide.with(this).load(it.receiptImagePath).into(ivReceipt)
@@ -114,7 +120,9 @@ class EditExpenseActivity : AppCompatActivity() {
     private fun saveExpense() {
         expense?.let {
             it.description = etDescription.text.toString()
-            it.amount = etAmount.text.toString().toDouble()
+            it.location = etLocation.text.toString()
+            it.usAmount = etUSAmount.text.toString().toDouble()
+            it.ausAumount = etAUSAmount.text.toString().toDouble()
             it.date = etDate.text.toString()
             it.receiptImagePath = newReceiptPath ?: it.receiptImagePath
             it.screenshotImagePath = newScreenshotPath ?: it.screenshotImagePath

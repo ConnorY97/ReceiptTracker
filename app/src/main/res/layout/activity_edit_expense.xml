@@ -5,20 +5,51 @@
     android:orientation="vertical"
     android:padding="16dp">
 
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/edit_expense"
+        android:gravity="center"
+        android:textStyle="bold"
+        android:textSize="36sp" />
+
     <EditText
         android:id="@+id/etDescription"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:autofillHints="Description"
-        android:hint="@string/description" />
+        android:hint="@string/description"
+        android:inputType="text"
+        android:gravity="center"/>
 
     <EditText
-        android:id="@+id/etAmount"
+        android:id="@+id/etLocation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:autofillHints="Description"
+        android:hint="@string/location"
+        android:inputType="text"
+        android:gravity="center"/>
+
+    <EditText
+        android:id="@+id/etUSAmount"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:autofillHints="Amount"
+        android:hint="@string/us_amount"
         android:inputType="numberDecimal"
-        android:hint="@string/amount" />
+        android:layout_marginTop="8dp"
+        android:gravity="center"/>
+
+    <EditText
+        android:id="@+id/etAUSAmount"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:autofillHints="Amount"
+        android:hint="@string/aus_amount"
+        android:inputType="numberDecimal"
+        android:layout_marginTop="8dp"
+        android:gravity="center"/>
 
     <EditText
         android:id="@+id/etDate"
@@ -26,7 +57,8 @@
         android:layout_height="wrap_content"
         android:autofillHints="Date"
         android:inputType="date"
-        android:hint="@string/date" />
+        android:hint="@string/date"
+        android:gravity="center"/>
 
     <ImageView
         android:id="@+id/ivReceipt"

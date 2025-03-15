@@ -19,4 +19,8 @@
     <string name="fmod_expense_tracker">FMOD Expense Tracker</string>
     <string name="export_all">Export All</string>
     <string name="create_expense">Create Expense</string>
+    <string name="location">Location</string>
+    <string name="us_amount">US Amount</string>
+    <string name="aus_amount">Aus Amount</string>
+    <string name="edit_expense">Edit Expense</string>
 </resources>

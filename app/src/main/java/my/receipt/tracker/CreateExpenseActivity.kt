@@ -25,9 +25,13 @@ import java.io.FileWriter
 import java.text.SimpleDateFormat
 import java.util.*
 
+private const val CAMERA_PERMISSION_CODE = 100
+
 class CreateExpenseActivity : AppCompatActivity() {
     private lateinit var etDescription: EditText
-    private lateinit var etAmount: EditText
+    private lateinit var etLocation: EditText
+    private lateinit var etUSAmount: EditText
+    private lateinit var etAUSAmount: EditText
     private lateinit var btnSelectDate: Button
     private lateinit var btnCaptureReceipt: Button
     private lateinit var btnSelectScreenshot: Button
@@ -39,13 +43,14 @@ class CreateExpenseActivity : AppCompatActivity() {
     private var receiptImagePath: String? = null
     private var screenshotImagePath: String? = null
     private var tempCameraImageUri: Uri? = null
-    private val CAMERA_PERMISSION_CODE = 100
 
     private fun captureReceipt() {
         // Check if permission is granted
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
             // Request permission if not granted
-            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA), CAMERA_PERMISSION_CODE)
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA),
+                CAMERA_PERMISSION_CODE
+            )
         } else {
             // Permission is already granted, proceed with capturing image
             launchCamera()
@@ -126,7 +131,9 @@ class CreateExpenseActivity : AppCompatActivity() {
         setContentView(R.layout.activity_create_expense)
 
         etDescription = findViewById(R.id.etDescription)
-        etAmount = findViewById(R.id.etAmount)
+        etLocation = findViewById(R.id.etLocation)
+        etUSAmount = findViewById(R.id.etUSAmount)
+        etAUSAmount = findViewById(R.id.etAUSAmount)
         btnSelectDate = findViewById(R.id.btnSelectDate)
         btnCaptureReceipt = findViewById(R.id.btnCaptureReceipt)
         btnSelectScreenshot = findViewById(R.id.btnSelectScreenshot)
@@ -137,7 +144,35 @@ class CreateExpenseActivity : AppCompatActivity() {
         btnSelectDate.setOnClickListener { showDatePicker() }
         btnCaptureReceipt.setOnClickListener { captureReceipt() }
         btnSelectScreenshot.setOnClickListener { selectScreenshot() }
-        btnSaveExpense.setOnClickListener { saveExpense() }
+        btnSaveExpense.setOnClickListener {
+            if (validateFields()) {
+                saveExpense()
+            }
+        }
+    }
+
+    private fun getMissingFieldMessage(): String? {
+        return when {
+            etDescription.text.toString().isBlank() -> "Description is required."
+            etLocation.text.toString().isBlank() -> "Location is required."
+            etUSAmount.text.toString().isBlank() -> "US Amount is required."
+            etUSAmount.text.toString().toDoubleOrNull() == null -> "US Amount must be a valid number."
+            etAUSAmount.text.toString().isBlank() -> "AUS Amount is required."
+            etAUSAmount.text.toString().toDoubleOrNull() == null -> "AUS Amount must be a valid number."
+            selectedDate.isBlank() -> "Date is required."
+            receiptImagePath == null -> "Receipt image is required"
+            screenshotImagePath == null -> "Bank screenshot is required"
+            else -> null
+        }
+    }
+
+    private fun validateFields(): Boolean {
+        val errorMessage = getMissingFieldMessage()
+        if (errorMessage != null) {
+            Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show()
+            return false
+        }
+        return true
     }
 
     private fun showDatePicker() {
@@ -154,37 +189,6 @@ class CreateExpenseActivity : AppCompatActivity() {
         datePickerDialog.show()
     }
 
-//    private fun captureReceipt() {
-//        try {
-//            // Create a file to save the image
-//            val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
-//            val imageFileName = "JPEG_${timeStamp}_"
-//            val storageDir = File(filesDir, "Camera")
-//            storageDir.mkdirs()
-//            val imageFile = File.createTempFile(
-//                imageFileName,
-//                ".jpg",
-//                storageDir
-//            )
-//
-//            // Get a URI for the file using FileProvider
-//            val uri = FileProvider.getUriForFile(
-//                this,
-//                "${applicationContext.packageName}.fileprovider",
-//                imageFile
-//            )
-//
-//            // Store the URI for later use
-//            tempCameraImageUri = uri
-//
-//            // Launch camera with the URI - now we know it's non-null
-//            takePictureContract.launch(uri)
-//        } catch (e: Exception) {
-//            e.printStackTrace()
-//            Toast.makeText(this, "Failed to start camera: ${e.message}", Toast.LENGTH_SHORT).show()
-//        }
-//    }
-
     private fun selectScreenshot() {
         selectImageContract.launch("image/*")
     }
@@ -197,10 +201,7 @@ class CreateExpenseActivity : AppCompatActivity() {
                 else -> ivScreenshot.drawable
             }
 
-            val bitmap = drawable?.toBitmap()
-            if (bitmap == null) {
-                return uri.toString()
-            }
+            val bitmap = drawable?.toBitmap() ?: return uri.toString()
 
             // Save the bitmap to a file
             val file = File(filesDir, fileName)
@@ -218,17 +219,9 @@ class CreateExpenseActivity : AppCompatActivity() {
 
     private fun saveExpense() {
         val description = etDescription.text.toString()
-        val amount = etAmount.text.toString().toDoubleOrNull()
-
-        if (description.isBlank() || amount == null || selectedDate.isBlank()) {
-            Toast.makeText(this, "Please fill in all fields", Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        if (receiptImagePath == null) {
-            Toast.makeText(this, "Please capture a receipt image", Toast.LENGTH_SHORT).show()
-            return
-        }
+        val location = etLocation.text.toString()
+        val usAmount = etUSAmount.text.toString().toDoubleOrNull() ?: return
+        val ausAmount = etAUSAmount.text.toString().toDoubleOrNull() ?: return
 
         // Save the bitmap images to internal storage for permanent storage
         var finalReceiptPath = receiptImagePath
@@ -254,7 +247,9 @@ class CreateExpenseActivity : AppCompatActivity() {
         val newExpense = Expense(
             id = UUID.randomUUID().toString(),
             description = description,
-            amount = amount,
+            location = location,
+            usAmount = usAmount,
+            ausAumount = ausAmount,
             date = selectedDate,
             receiptImagePath = finalReceiptPath,
             screenshotImagePath = finalScreenshotPath
@@ -294,7 +289,9 @@ class CreateExpenseActivity : AppCompatActivity() {
 // Expense Data Model
 data class Expense(
     var description: String,
-    var amount: Double,
+    var location: String,
+    var usAmount: Double,
+    var ausAumount: Double,
     var date: String,
     var receiptImagePath: String?,
     var screenshotImagePath: String?,
