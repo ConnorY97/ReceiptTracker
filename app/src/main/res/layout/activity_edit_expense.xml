@@ -33,27 +33,26 @@
         android:layout_width="100dp"
         android:layout_height="100dp"
         android:scaleType="centerCrop"
-        android:contentDescription="Receipt Image" />
+        android:contentDescription="@string/receipt_image" />
 
     <Button
         android:id="@+id/btnChangeReceipt"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Change Receipt Image" />
+        android:text="@string/change_receipt_image" />
 
     <ImageView
         android:id="@+id/ivScreenshot"
         android:layout_width="100dp"
         android:layout_height="100dp"
         android:scaleType="centerCrop"
-        android:contentDescription="Bank Screenshot" />
+        android:contentDescription="@string/bank_screenshot" />
 
     <Button
         android:id="@+id/btnChangeScreenshot"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Change Bank Screenshot" />
-
+        android:text="@string/change_bank_screenshot" />
 
     <Button
         android:id="@+id/btnSave"

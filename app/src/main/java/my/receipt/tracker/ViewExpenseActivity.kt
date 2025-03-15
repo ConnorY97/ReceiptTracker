@@ -1,6 +1,6 @@
 package my.receipt.tracker
 
-import ExpenseAdapter
+import my.receipt.tracker.components.ExpenseAdapter
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle

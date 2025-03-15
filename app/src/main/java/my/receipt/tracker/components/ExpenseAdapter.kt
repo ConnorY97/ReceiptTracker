@@ -1,3 +1,5 @@
+package my.receipt.tracker.components
+
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,7 +16,7 @@ class ExpenseAdapter(private val expenses: List<Expense>, private val onExpenseC
         val tvDescription: TextView = itemView.findViewById(R.id.tvDescription)
         val tvAmount: TextView = itemView.findViewById(R.id.tvAmount)
         val tvDate: TextView = itemView.findViewById(R.id.tvDate)
-        val ivReceipt: ImageView = itemView.findViewById(R.id.ivReceipt)
+        //val ivReceipt: ImageView = itemView.findViewById(R.id.ivReceipt)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ExpenseViewHolder {
@@ -27,10 +29,6 @@ class ExpenseAdapter(private val expenses: List<Expense>, private val onExpenseC
         holder.tvDescription.text = expense.description
         holder.tvAmount.text = "\$${expense.amount}"
         holder.tvDate.text = expense.date
-
-        expense.receiptImagePath?.let {
-            Glide.with(holder.itemView.context).load(it).into(holder.ivReceipt)
-        }
 
         holder.itemView.setOnClickListener {
             onExpenseClick(expense)

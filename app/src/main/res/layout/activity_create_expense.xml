@@ -43,7 +43,7 @@
         <ImageView
             android:id="@+id/ivReceipt"
             android:layout_width="match_parent"
-            android:layout_height="200dp"
+            android:layout_height="100dp"
             android:contentDescription="@string/receipt"
             android:scaleType="centerCrop"
             android:visibility="gone"
@@ -59,7 +59,7 @@
         <ImageView
             android:id="@+id/ivScreenshot"
             android:layout_width="match_parent"
-            android:layout_height="200dp"
+            android:layout_height="100dp"
             android:contentDescription="@string/bank_screenshot"
             android:scaleType="centerCrop"
             android:visibility="gone"

@@ -14,4 +14,6 @@
     <string name="date">Date</string>
     <string name="receipt_image">Receipt Image</string>
     <string name="delete">Delete</string>
+    <string name="change_receipt_image">Change Receipt Image</string>
+    <string name="change_bank_screenshot">Change Bank Screenshot</string>
 </resources>
