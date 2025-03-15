@@ -10,7 +10,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:paddingBottom="16dp"
-        android:text="@string/fmod_expense_tracker"
+        android:text="@string/expense_tracker"
         android:textSize="34sp"
         android:textStyle="bold" />
 
