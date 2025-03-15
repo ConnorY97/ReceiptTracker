@@ -4,10 +4,9 @@ import my.receipt.tracker.components.ExpenseAdapter
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
-import android.view.Menu
-import android.view.MenuItem
 import android.widget.Button
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -22,6 +21,15 @@ class ViewExpensesActivity : AppCompatActivity() {
     private lateinit var expensesAdapter: ExpenseAdapter
     private lateinit var expenseExporter: ExpenseExporter
 
+    // Register the activity result launcher for editing an expense
+    private val editExpenseLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            loadExpenses() // Reload expenses after editing
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_view_expenses)
@@ -33,7 +41,7 @@ class ViewExpensesActivity : AppCompatActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.title = "View Expenses"
 
-        var backButton = findViewById<Button>(R.id.btnBack)
+        val backButton = findViewById<Button>(R.id.btnBack)
         recyclerView = findViewById(R.id.recyclerView)
         recyclerView.layoutManager = LinearLayoutManager(this)
 
@@ -42,7 +50,7 @@ class ViewExpensesActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-        // Add export button (if you don't want to use menu)
+        // Add export button
         val exportButton = findViewById<Button>(R.id.btnExport)
         exportButton.setOnClickListener {
             exportExpenses()
@@ -82,19 +90,8 @@ class ViewExpensesActivity : AppCompatActivity() {
         expensesAdapter = ExpenseAdapter(expenses) { selectedExpense ->
             val intent = Intent(this, EditExpenseActivity::class.java)
             intent.putExtra("expense", Gson().toJson(selectedExpense))
-            startActivityForResult(intent, REQUEST_EDIT_EXPENSE)
+            editExpenseLauncher.launch(intent) // Use the new API here
         }
         recyclerView.adapter = expensesAdapter
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == REQUEST_EDIT_EXPENSE && resultCode == Activity.RESULT_OK) {
-            loadExpenses()
-        }
-    }
-
-    companion object {
-        private const val REQUEST_EDIT_EXPENSE = 1
     }
 }

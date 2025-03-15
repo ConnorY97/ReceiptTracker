@@ -2,11 +2,11 @@ package my.receipt.tracker
 
 import android.app.Activity
 import android.app.AlertDialog
-import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
 import com.google.gson.Gson
@@ -29,6 +29,25 @@ class EditExpenseActivity : AppCompatActivity() {
     private var expense: Expense? = null
     private var newReceiptPath: String? = null
     private var newScreenshotPath: String? = null
+
+    // Define the activity result launchers
+    private val receiptImageLauncher = registerForActivityResult(
+        ActivityResultContracts.GetContent()
+    ) { uri ->
+        uri?.let {
+            newReceiptPath = it.toString()
+            Glide.with(this).load(newReceiptPath).into(ivReceipt)
+        }
+    }
+
+    private val screenshotImageLauncher = registerForActivityResult(
+        ActivityResultContracts.GetContent()
+    ) { uri ->
+        uri?.let {
+            newScreenshotPath = it.toString()
+            Glide.with(this).load(newScreenshotPath).into(ivScreenshot)
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -57,13 +76,13 @@ class EditExpenseActivity : AppCompatActivity() {
         }
 
         btnChangeReceipt.setOnClickListener {
-            // Logic to update receipt image
-            pickImage(REQUEST_RECEIPT)
+            // Launch image picker for receipt
+            receiptImageLauncher.launch("image/*")
         }
 
         btnChangeScreenshot.setOnClickListener {
-            // Logic to update bank screenshot
-            pickImage(REQUEST_SCREENSHOT)
+            // Launch image picker for screenshot
+            screenshotImageLauncher.launch("image/*")
         }
 
         btnSave.setOnClickListener {
@@ -92,29 +111,6 @@ class EditExpenseActivity : AppCompatActivity() {
         }
     }
 
-    private fun pickImage(requestCode: Int) {
-        val intent = Intent(Intent.ACTION_PICK)
-        intent.type = "image/*"
-        startActivityForResult(intent, requestCode)
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (resultCode == Activity.RESULT_OK && data != null) {
-            val selectedImageUri = data.data?.toString()
-            when (requestCode) {
-                REQUEST_RECEIPT -> {
-                    newReceiptPath = selectedImageUri
-                    Glide.with(this).load(newReceiptPath).into(ivReceipt)
-                }
-                REQUEST_SCREENSHOT -> {
-                    newScreenshotPath = selectedImageUri
-                    Glide.with(this).load(newScreenshotPath).into(ivScreenshot)
-                }
-            }
-        }
-    }
-
     private fun saveExpense() {
         expense?.let {
             it.description = etDescription.text.toString()
@@ -124,11 +120,6 @@ class EditExpenseActivity : AppCompatActivity() {
             it.screenshotImagePath = newScreenshotPath ?: it.screenshotImagePath
             updateExpense(it)
         }
-    }
-
-    companion object {
-        private const val REQUEST_RECEIPT = 1001
-        private const val REQUEST_SCREENSHOT = 1002
     }
 
     private fun updateExpense(updatedExpense: Expense) {
@@ -176,4 +167,3 @@ class EditExpenseActivity : AppCompatActivity() {
         finish()
     }
 }
-

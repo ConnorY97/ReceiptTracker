@@ -1,22 +1,28 @@
 package my.receipt.tracker
 
+import android.Manifest
 import android.app.DatePickerDialog
-import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
-import android.provider.MediaStore
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
+import androidx.core.graphics.drawable.toBitmap
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import java.io.File
 import java.io.FileOutputStream
 import java.io.FileReader
 import java.io.FileWriter
+import java.text.SimpleDateFormat
 import java.util.*
 
 class CreateExpenseActivity : AppCompatActivity() {
@@ -32,6 +38,88 @@ class CreateExpenseActivity : AppCompatActivity() {
     private var selectedDate: String = ""
     private var receiptImagePath: String? = null
     private var screenshotImagePath: String? = null
+    private var tempCameraImageUri: Uri? = null
+    private val CAMERA_PERMISSION_CODE = 100
+
+    private fun captureReceipt() {
+        // Check if permission is granted
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            // Request permission if not granted
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA), CAMERA_PERMISSION_CODE)
+        } else {
+            // Permission is already granted, proceed with capturing image
+            launchCamera()
+        }
+    }
+
+    // Handle permission request result
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == CAMERA_PERMISSION_CODE) {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                launchCamera()
+            } else {
+                Toast.makeText(this, "Camera permission denied", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun launchCamera() {
+        try {
+            val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+            val imageFileName = "JPEG_${timeStamp}_"
+            val storageDir = File(filesDir, "Camera")
+            storageDir.mkdirs()
+            val imageFile = File.createTempFile(imageFileName, ".jpg", storageDir)
+
+            val uri = FileProvider.getUriForFile(
+                this,
+                "${applicationContext.packageName}.fileprovider",
+                imageFile
+            )
+
+            tempCameraImageUri = uri
+            takePictureContract.launch(uri)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Toast.makeText(this, "Failed to start camera: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
+    }
+    // Register activity result contracts
+    // For camera - use TakePicture contract which works with Uri
+    private val takePictureContract = registerForActivityResult(
+        ActivityResultContracts.TakePicture()
+    ) { success ->
+        if (success) {
+            tempCameraImageUri?.let { uri ->
+                // Load uri into ImageView
+                ivReceipt.setImageURI(uri)
+                ivReceipt.visibility = ImageView.VISIBLE
+
+                // Save the URI path
+                receiptImagePath = uri.toString()
+            }
+        }
+    }
+
+    // For gallery selection
+    private val selectImageContract = registerForActivityResult(
+        ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let {
+            try {
+                // Set image URI directly
+                ivScreenshot.setImageURI(it)
+                ivScreenshot.visibility = ImageView.VISIBLE
+
+                // Save the URI for later use
+                screenshotImagePath = it.toString()
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Toast.makeText(this, "Failed to load image", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -66,55 +154,66 @@ class CreateExpenseActivity : AppCompatActivity() {
         datePickerDialog.show()
     }
 
-    private fun captureReceipt() {
-        val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-        startActivityForResult(intent, REQUEST_IMAGE_CAPTURE)
-    }
+//    private fun captureReceipt() {
+//        try {
+//            // Create a file to save the image
+//            val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+//            val imageFileName = "JPEG_${timeStamp}_"
+//            val storageDir = File(filesDir, "Camera")
+//            storageDir.mkdirs()
+//            val imageFile = File.createTempFile(
+//                imageFileName,
+//                ".jpg",
+//                storageDir
+//            )
+//
+//            // Get a URI for the file using FileProvider
+//            val uri = FileProvider.getUriForFile(
+//                this,
+//                "${applicationContext.packageName}.fileprovider",
+//                imageFile
+//            )
+//
+//            // Store the URI for later use
+//            tempCameraImageUri = uri
+//
+//            // Launch camera with the URI - now we know it's non-null
+//            takePictureContract.launch(uri)
+//        } catch (e: Exception) {
+//            e.printStackTrace()
+//            Toast.makeText(this, "Failed to start camera: ${e.message}", Toast.LENGTH_SHORT).show()
+//        }
+//    }
 
     private fun selectScreenshot() {
-        val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
-        startActivityForResult(intent, REQUEST_IMAGE_PICK)
+        selectImageContract.launch("image/*")
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (resultCode == RESULT_OK) {
-            when (requestCode) {
-                REQUEST_IMAGE_CAPTURE -> {
-                    val imageBitmap = data?.extras?.get("data") as? Bitmap
-                    imageBitmap?.let {
-                        receiptImagePath = saveImageToInternalStorage(it, "receipt_${System.currentTimeMillis()}.jpg")
-                        ivReceipt.setImageBitmap(it)
-                        ivReceipt.visibility = ImageView.VISIBLE
-                    }
-                }
-                REQUEST_IMAGE_PICK -> {
-                    val selectedImageUri: Uri? = data?.data
-                    selectedImageUri?.let {
-                        try {
-                            // Create a bitmap from the URI
-                            val bitmap = MediaStore.Images.Media.getBitmap(contentResolver, it)
-                            // Save the bitmap to internal storage
-                            screenshotImagePath = saveImageToInternalStorage(bitmap, "screenshot_${System.currentTimeMillis()}.jpg")
-                            // Display the image
-                            ivScreenshot.setImageBitmap(bitmap)
-                            ivScreenshot.visibility = ImageView.VISIBLE
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                            Toast.makeText(this, "Failed to load image", Toast.LENGTH_SHORT).show()
-                        }
-                    }
-                }
+    private fun saveImageToInternalStorage(uri: Uri, fileName: String): String {
+        try {
+            // Create a bitmap from the ImageView that has loaded the URI
+            val drawable = when {
+                uri.toString() == tempCameraImageUri.toString() -> ivReceipt.drawable
+                else -> ivScreenshot.drawable
             }
-        }
-    }
 
-    private fun saveImageToInternalStorage(bitmap: Bitmap, fileName: String): String {
-        val file = File(filesDir, fileName)
-        FileOutputStream(file).use {
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 90, it)
+            val bitmap = drawable?.toBitmap()
+            if (bitmap == null) {
+                return uri.toString()
+            }
+
+            // Save the bitmap to a file
+            val file = File(filesDir, fileName)
+            FileOutputStream(file).use { out ->
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out)
+            }
+
+            return file.absolutePath
+        } catch (e: Exception) {
+            e.printStackTrace()
+            // If there's any error, return the original URI as fallback
+            return uri.toString()
         }
-        return file.absolutePath
     }
 
     private fun saveExpense() {
@@ -131,13 +230,34 @@ class CreateExpenseActivity : AppCompatActivity() {
             return
         }
 
+        // Save the bitmap images to internal storage for permanent storage
+        var finalReceiptPath = receiptImagePath
+        tempCameraImageUri?.let { uri ->
+            val receiptFileName = "receipt_${System.currentTimeMillis()}.jpg"
+            finalReceiptPath = saveImageToInternalStorage(uri, receiptFileName)
+        }
+
+        var finalScreenshotPath = screenshotImagePath
+        if (screenshotImagePath != null) {
+            try {
+                val screenshotFileName = "screenshot_${System.currentTimeMillis()}.jpg"
+                val uri = Uri.parse(screenshotImagePath)
+                if (uri != null) {
+                    finalScreenshotPath = saveImageToInternalStorage(uri, screenshotFileName)
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                // Keep the original path if there's any error
+            }
+        }
+
         val newExpense = Expense(
             id = UUID.randomUUID().toString(),
             description = description,
             amount = amount,
             date = selectedDate,
-            receiptImagePath = receiptImagePath,
-            screenshotImagePath = screenshotImagePath
+            receiptImagePath = finalReceiptPath,
+            screenshotImagePath = finalScreenshotPath
         )
 
         val expenses = loadExpenses().toMutableList()
@@ -161,15 +281,12 @@ class CreateExpenseActivity : AppCompatActivity() {
 
     private fun saveExpensesToFile(expenses: List<Expense>) {
         val file = File(filesDir, EXPENSES_FILE)
-        val writer = FileWriter(file)
-        Gson().toJson(expenses, writer)
-        writer.flush()
-        writer.close()
+        FileWriter(file).use { writer ->
+            Gson().toJson(expenses, writer)
+        }
     }
 
     companion object {
-        private const val REQUEST_IMAGE_CAPTURE = 1
-        private const val REQUEST_IMAGE_PICK = 2
         private const val EXPENSES_FILE = "expenses.json"
     }
 }
