@@ -17,4 +17,5 @@
     <string name="change_receipt_image">Change Receipt Image</string>
     <string name="change_bank_screenshot">Change Bank Screenshot</string>
     <string name="fmod_expense_tracker">FMOD Expense Tracker</string>
+    <string name="export_all">Export All</string>
 </resources>
