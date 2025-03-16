@@ -2,15 +2,20 @@ package my.receipt.tracker
 
 import android.app.Activity
 import android.app.AlertDialog
+import android.graphics.Bitmap
+import android.net.Uri
 import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.graphics.drawable.toBitmap
 import com.bumptech.glide.Glide
 import com.google.gson.Gson
 import java.io.File
+import java.io.FileOutputStream
 import java.io.FileReader
 import java.io.FileWriter
 import com.google.gson.reflect.TypeToken
@@ -37,8 +42,16 @@ class EditExpenseActivity : AppCompatActivity() {
         ActivityResultContracts.GetContent()
     ) { uri ->
         uri?.let {
-            newReceiptPath = it.toString()
-            Glide.with(this).load(newReceiptPath).into(ivReceipt)
+            try {
+                // Load the image into the ImageView
+                Glide.with(this).load(uri).into(ivReceipt)
+
+                // Store the URI temporarily
+                newReceiptPath = uri.toString()
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Toast.makeText(this, "Failed to load receipt image", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
@@ -46,8 +59,16 @@ class EditExpenseActivity : AppCompatActivity() {
         ActivityResultContracts.GetContent()
     ) { uri ->
         uri?.let {
-            newScreenshotPath = it.toString()
-            Glide.with(this).load(newScreenshotPath).into(ivScreenshot)
+            try {
+                // Load the image into the ImageView
+                Glide.with(this).load(uri).into(ivScreenshot)
+
+                // Store the URI temporarily
+                newScreenshotPath = uri.toString()
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Toast.makeText(this, "Failed to load screenshot image", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
@@ -117,15 +138,62 @@ class EditExpenseActivity : AppCompatActivity() {
         }
     }
 
+    private fun saveImageToInternalStorage(uri: Uri, fileName: String): String {
+        try {
+            // Create a bitmap from the ImageView that has loaded the URI
+            val drawable = when {
+                newReceiptPath == uri.toString() -> ivReceipt.drawable
+                else -> ivScreenshot.drawable
+            }
+
+            val bitmap = drawable?.toBitmap() ?: return uri.toString()
+
+            // Save the bitmap to a file
+            val file = File(filesDir, fileName)
+            FileOutputStream(file).use { out ->
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out)
+            }
+
+            return file.absolutePath
+        } catch (e: Exception) {
+            e.printStackTrace()
+            // If there's any error, return the original URI as fallback
+            return uri.toString()
+        }
+    }
+
     private fun saveExpense() {
         expense?.let {
+            // Update expense details
             it.description = etDescription.text.toString()
             it.location = etLocation.text.toString()
             it.usAmount = etUSAmount.text.toString().toDouble()
             it.ausAumount = etAUSAmount.text.toString().toDouble()
             it.date = etDate.text.toString()
-            it.receiptImagePath = newReceiptPath ?: it.receiptImagePath
-            it.screenshotImagePath = newScreenshotPath ?: it.screenshotImagePath
+
+            // Save the newly selected images to internal storage if they've been changed
+            if (newReceiptPath != null) {
+                try {
+                    val receiptFileName = "receipt_${System.currentTimeMillis()}.jpg"
+                    val uri = Uri.parse(newReceiptPath)
+                    it.receiptImagePath = saveImageToInternalStorage(uri, receiptFileName)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    Toast.makeText(this, "Failed to save receipt image", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            if (newScreenshotPath != null) {
+                try {
+                    val screenshotFileName = "screenshot_${System.currentTimeMillis()}.jpg"
+                    val uri = Uri.parse(newScreenshotPath)
+                    it.screenshotImagePath = saveImageToInternalStorage(uri, screenshotFileName)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    Toast.makeText(this, "Failed to save screenshot image", Toast.LENGTH_SHORT).show()
+                }
+            }
+
             updateExpense(it)
         }
     }
@@ -150,6 +218,7 @@ class EditExpenseActivity : AppCompatActivity() {
             Gson().toJson(expenses, writer)
         }
 
+        Toast.makeText(this, "Expense updated successfully", Toast.LENGTH_SHORT).show()
         setResult(Activity.RESULT_OK)
         finish()
     }
@@ -171,6 +240,7 @@ class EditExpenseActivity : AppCompatActivity() {
             Gson().toJson(expenses, writer)
         }
 
+        Toast.makeText(this, "Expense deleted successfully", Toast.LENGTH_SHORT).show()
         setResult(Activity.RESULT_OK)
         finish()
     }
