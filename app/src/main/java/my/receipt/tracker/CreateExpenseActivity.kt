@@ -16,6 +16,7 @@ import java.util.*
 import my.receipt.tracker.components.Expense
 import my.receipt.tracker.utils.CameraHelper
 import my.receipt.tracker.utils.GalleryHelper
+import my.receipt.tracker.utils.ImageSaveHelper
 
 class CreateExpenseActivity : AppCompatActivity() {
     private lateinit var etDescription: EditText
@@ -32,6 +33,7 @@ class CreateExpenseActivity : AppCompatActivity() {
     private lateinit var cameraHelper: CameraHelper
     private lateinit var galleryHelperReceipt: GalleryHelper
     private lateinit var galleryHelperScreenshot: GalleryHelper
+    private lateinit var imageSaveHelper: ImageSaveHelper
 
     private var selectedDate: String = ""
     private var receiptImagePath: String? = null
@@ -57,6 +59,7 @@ class CreateExpenseActivity : AppCompatActivity() {
         cameraHelper = CameraHelper(this, takePictureContract)
         galleryHelperReceipt = GalleryHelper(selectReceiptContract)
         galleryHelperScreenshot = GalleryHelper(selectScreenshotContract)
+        imageSaveHelper = ImageSaveHelper(this)
 
         // Set event listeners
         btnSelectDate.setOnClickListener { showDatePicker() }
@@ -75,7 +78,11 @@ class CreateExpenseActivity : AppCompatActivity() {
     ) { success ->
         if (success) {
             cameraHelper.displayImage(ivReceipt)
-            receiptImagePath = cameraHelper.imageUri.toString()
+            val fileName = "receipt_${System.currentTimeMillis()}.jpg"
+            receiptImagePath = cameraHelper.imageUri?.let {
+                imageSaveHelper.saveImageToInternalStorage(
+                    it, fileName, ivReceipt)
+            }
         }
     }
 
@@ -83,14 +90,24 @@ class CreateExpenseActivity : AppCompatActivity() {
         androidx.activity.result.contract.ActivityResultContracts.GetContent()
     ) { uri ->
         galleryHelperReceipt.displayImage(uri, ivReceipt)
-        receiptImagePath = galleryHelperReceipt.selectedImageUri.toString()
+        val fileName = "receipt_${System.currentTimeMillis()}.jpg"
+        receiptImagePath = uri?.let {
+            imageSaveHelper.saveImageToInternalStorage(
+                it, fileName, ivReceipt
+            )
+        }
     }
 
     private val selectScreenshotContract = registerForActivityResult(
         androidx.activity.result.contract.ActivityResultContracts.GetContent()
     ) { uri ->
         galleryHelperScreenshot.displayImage(uri, ivScreenshot)
-        screenshotImagePath = galleryHelperScreenshot.selectedImageUri.toString()
+        val fileName = "screenshot_${System.currentTimeMillis()}.jpg"
+        screenshotImagePath = uri?.let {
+            imageSaveHelper.saveImageToInternalStorage(
+                it, fileName, ivScreenshot
+            )
+        }
     }
 
     // Show date picker

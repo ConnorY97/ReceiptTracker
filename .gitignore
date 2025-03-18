@@ -33,4 +33,4 @@ google-services.json
 *.hprof
 
 # Ignore build files
-/app/*
+/app/release/*
