@@ -17,6 +17,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import my.receipt.tracker.components.Expense
 import my.receipt.tracker.utils.CameraHelper
 import my.receipt.tracker.utils.GalleryHelper
+import my.receipt.tracker.utils.ImageSaveHelper
 
 class EditExpenseActivity : AppCompatActivity() {
     private lateinit var etDescription: EditText
@@ -34,6 +35,8 @@ class EditExpenseActivity : AppCompatActivity() {
     private lateinit var cameraHelper: CameraHelper
     private lateinit var galleryHelperReceipt: GalleryHelper
     private lateinit var galleryHelperScreenshot: GalleryHelper
+    private lateinit var imageSaveHelper: ImageSaveHelper
+
 
     private var expense: Expense? = null
 
@@ -58,6 +61,7 @@ class EditExpenseActivity : AppCompatActivity() {
         cameraHelper = CameraHelper(this, takePictureContract)
         galleryHelperReceipt = GalleryHelper(selectReceiptContract)
         galleryHelperScreenshot = GalleryHelper(selectScreenshotContract)
+        imageSaveHelper = ImageSaveHelper(this)
 
         // Load the expense data
         val expenseJson = intent.getStringExtra("expense")
@@ -100,14 +104,26 @@ class EditExpenseActivity : AppCompatActivity() {
         }
     }
 
-    private val selectReceiptContract = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+    private val selectReceiptContract = registerForActivityResult(
+        ActivityResultContracts.GetContent()
+    ) { uri ->
         galleryHelperReceipt.displayImage(uri, ivReceipt)
-        expense?.receiptImagePath = galleryHelperReceipt.selectedImageUri.toString()
+        val fileName = "receipt_${System.currentTimeMillis()}.jpg"
+        expense?.receiptImagePath = uri?.let {
+            imageSaveHelper.saveImageToInternalStorage(
+                it, fileName, ivReceipt
+            )
+        }
     }
 
-    private val selectScreenshotContract = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+    private val selectScreenshotContract = registerForActivityResult(
+        ActivityResultContracts.GetContent()
+    ) { uri ->
         galleryHelperScreenshot.displayImage(uri, ivScreenshot)
-        expense?.screenshotImagePath = galleryHelperScreenshot.selectedImageUri.toString()
+        val fileName = "screenshot_${System.currentTimeMillis()}.jpg"
+        expense?.screenshotImagePath = uri?.let {
+            imageSaveHelper.saveImageToInternalStorage(it, fileName, ivScreenshot)
+        }
     }
 
     // Display delete confirmation dialog

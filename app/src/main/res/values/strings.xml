@@ -21,7 +21,7 @@
     <string name="create_expense">Create Expense</string>
     <string name="location">Location</string>
     <string name="us_amount">US Amount</string>
-    <string name="aus_amount">Aus Amount</string>
+    <string name="aus_amount">AUS Amount</string>
     <string name="edit_expense">Edit Expense</string>
     <string name="expense_tracker">Expense Tracker</string>
 </resources>
