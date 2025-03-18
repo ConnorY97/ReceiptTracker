@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
 import com.google.gson.Gson
@@ -14,6 +13,10 @@ import java.io.File
 import java.io.FileReader
 import java.io.FileWriter
 import com.google.gson.reflect.TypeToken
+import androidx.activity.result.contract.ActivityResultContracts
+import my.receipt.tracker.components.Expense
+import my.receipt.tracker.utils.CameraHelper
+import my.receipt.tracker.utils.GalleryHelper
 
 class EditExpenseActivity : AppCompatActivity() {
     private lateinit var etDescription: EditText
@@ -28,33 +31,17 @@ class EditExpenseActivity : AppCompatActivity() {
     private lateinit var btnSave: Button
     private lateinit var btnDelete: Button
 
+    private lateinit var cameraHelper: CameraHelper
+    private lateinit var galleryHelperReceipt: GalleryHelper
+    private lateinit var galleryHelperScreenshot: GalleryHelper
+
     private var expense: Expense? = null
-    private var newReceiptPath: String? = null
-    private var newScreenshotPath: String? = null
-
-    // Define the activity result launchers
-    private val receiptImageLauncher = registerForActivityResult(
-        ActivityResultContracts.GetContent()
-    ) { uri ->
-        uri?.let {
-            newReceiptPath = it.toString()
-            Glide.with(this).load(newReceiptPath).into(ivReceipt)
-        }
-    }
-
-    private val screenshotImageLauncher = registerForActivityResult(
-        ActivityResultContracts.GetContent()
-    ) { uri ->
-        uri?.let {
-            newScreenshotPath = it.toString()
-            Glide.with(this).load(newScreenshotPath).into(ivScreenshot)
-        }
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_edit_expense)
 
+        // Initialize UI components
         etDescription = findViewById(R.id.etDescription)
         etLocation = findViewById(R.id.etLocation)
         etUSAmount = findViewById(R.id.etUSAmount)
@@ -67,6 +54,12 @@ class EditExpenseActivity : AppCompatActivity() {
         btnSave = findViewById(R.id.btnSave)
         btnDelete = findViewById(R.id.btnDelete)
 
+        // Initialize helpers
+        cameraHelper = CameraHelper(this, takePictureContract)
+        galleryHelperReceipt = GalleryHelper(selectReceiptContract)
+        galleryHelperScreenshot = GalleryHelper(selectScreenshotContract)
+
+        // Load the expense data
         val expenseJson = intent.getStringExtra("expense")
         expense = Gson().fromJson(expenseJson, Expense::class.java)
 
@@ -81,14 +74,13 @@ class EditExpenseActivity : AppCompatActivity() {
             Glide.with(this).load(it.screenshotImagePath).into(ivScreenshot)
         }
 
+        // Event listeners
         btnChangeReceipt.setOnClickListener {
-            // Launch image picker for receipt
-            receiptImageLauncher.launch("image/*")
+            galleryHelperReceipt.launchGallery()
         }
 
         btnChangeScreenshot.setOnClickListener {
-            // Launch image picker for screenshot
-            screenshotImageLauncher.launch("image/*")
+            galleryHelperScreenshot.launchGallery()
         }
 
         btnSave.setOnClickListener {
@@ -100,6 +92,25 @@ class EditExpenseActivity : AppCompatActivity() {
         }
     }
 
+    // Activity Result Contracts
+    private val takePictureContract = registerForActivityResult(ActivityResultContracts.TakePicture()) { success ->
+        if (success) {
+            cameraHelper.displayImage(ivReceipt)
+            expense?.receiptImagePath = cameraHelper.imageUri.toString()
+        }
+    }
+
+    private val selectReceiptContract = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+        galleryHelperReceipt.displayImage(uri, ivReceipt)
+        expense?.receiptImagePath = galleryHelperReceipt.selectedImageUri.toString()
+    }
+
+    private val selectScreenshotContract = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+        galleryHelperScreenshot.displayImage(uri, ivScreenshot)
+        expense?.screenshotImagePath = galleryHelperScreenshot.selectedImageUri.toString()
+    }
+
+    // Display delete confirmation dialog
     private fun showDeleteConfirmationDialog() {
         AlertDialog.Builder(this)
             .setTitle("Delete Expense")
@@ -107,16 +118,18 @@ class EditExpenseActivity : AppCompatActivity() {
             .setPositiveButton("Yes") { _, _ ->
                 deleteExpense()
             }
-            .setNegativeButton("No", null) // Dismisses the dialog
+            .setNegativeButton("No", null)
             .show()
     }
 
+    // Delete expense
     private fun deleteExpense() {
         expense?.let {
             removeExpense(it)
         }
     }
 
+    // Save expense details
     private fun saveExpense() {
         expense?.let {
             it.description = etDescription.text.toString()
@@ -124,12 +137,12 @@ class EditExpenseActivity : AppCompatActivity() {
             it.usAmount = etUSAmount.text.toString().toDouble()
             it.ausAumount = etAUSAmount.text.toString().toDouble()
             it.date = etDate.text.toString()
-            it.receiptImagePath = newReceiptPath ?: it.receiptImagePath
-            it.screenshotImagePath = newScreenshotPath ?: it.screenshotImagePath
+
             updateExpense(it)
         }
     }
 
+    // Update the saved expense in the JSON file
     private fun updateExpense(updatedExpense: Expense) {
         val file = File(filesDir, "expenses.json")
         if (!file.exists()) return
@@ -154,6 +167,7 @@ class EditExpenseActivity : AppCompatActivity() {
         finish()
     }
 
+    // Remove the expense from the JSON file
     private fun removeExpense(expenseToRemove: Expense) {
         val file = File(filesDir, "expenses.json")
         if (!file.exists()) return

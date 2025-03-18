@@ -5,7 +5,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import my.receipt.tracker.Expense
 import my.receipt.tracker.R
 
 class ExpenseAdapter(private val expenses: List<Expense>, private val onExpenseClick: (Expense) -> Unit) : RecyclerView.Adapter<ExpenseAdapter.ExpenseViewHolder>() {

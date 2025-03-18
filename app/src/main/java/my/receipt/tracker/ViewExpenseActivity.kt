@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import my.receipt.tracker.components.Expense
 import my.receipt.tracker.components.ExpenseExporter
 import java.io.File
 import java.io.FileReader

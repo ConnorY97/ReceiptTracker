@@ -6,7 +6,6 @@ import android.widget.Toast
 import androidx.core.content.FileProvider
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import my.receipt.tracker.Expense
 import java.io.*
 import java.text.SimpleDateFormat
 import java.util.*
